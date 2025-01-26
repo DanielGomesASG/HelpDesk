@@ -1,0 +1,118 @@
+<div bsModal
+     #createOrEditModal="bs-modal"
+     class="modal fade"
+     tabindex="-1"
+     role="dialog"
+     aria-labelledby="createOrEditModal"
+     aria-hidden="true"
+     [config]="{ backdrop: 'static' }">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form *ngIf="active" #statusForm="ngForm" novalidate (ngSubmit)="save()" autocomplete="off">
+                <div class="modal-header">
+                    <h4 class="modal-title">
+                        <span *ngIf="status.id">{{ l('EditStatus') }}</span>
+                        <span *ngIf="!status.id">{{ l('CreateNewStatus') }}</span>
+                    </h4>
+
+                    <button type="button"
+                            class="btn-close"
+                            (click)="close()"
+                            aria-label="Close"
+                            [disabled]="saving"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="my-3">
+                        <label class="form-label" for="Status_Name">{{ l('Name') }}</label>
+                        <input type="text"
+                               #Status_Name="ngModel"
+                               id="Status_Name"
+                               class="form-control"
+                               [(ngModel)]="status.name"
+                               name="Name" />
+                        <validation-messages [formCtrl]="Status_Name"></validation-messages>
+                    </div>
+
+                    <div class="my-3">
+                        <label class="form-label" for="Status_Description">{{ l('Description') }}</label>
+                        <input type="text"
+                               #Status_Description="ngModel"
+                               id="Status_Description"
+                               class="form-control"
+                               [(ngModel)]="status.description"
+                               name="Description" />
+                        <validation-messages [formCtrl]="Status_Description"></validation-messages>
+                    </div>
+
+
+                    <div class="row my-3">
+                        <div class="col-md-3">
+                            <label class="form-label" for="Status_Color">{{l("Color")}}</label>
+                            <br />
+                            <div class="d-flex align-items-center">
+                                <p-colorPicker [(ngModel)]="status.color" [ngModelOptions]="{standalone: true}"></p-colorPicker>
+                                <input type="text" class="form-control" [(ngModel)]="status.color" [ngModelOptions]="{standalone: true}" />
+                            </div>
+
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label" for="Status_Color">{{l("BackgroundColor")}}</label>
+                            <br />
+                            <div class="d-flex align-items-center">
+                                <p-colorPicker [(ngModel)]="status.backgroundColor" [ngModelOptions]="{standalone: true}"></p-colorPicker>
+                                <input type="text" class="form-control" [(ngModel)]="status.backgroundColor" [ngModelOptions]="{standalone: true}" />
+                            </div>
+
+                        </div>
+                        <div class="col-md-6 d-flex justify-content-center align-items-center">
+                            Preview:
+                            <span class="label label-lg label-inline ms-3"
+                                  [style.color]="status.color"
+                                  [style.background-color]="status.backgroundColor">
+                                {{status.name}}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="my-3">
+                        <label class="form-label" for="Status_Code">{{ l('Code') }}</label>
+                        <input type="text"
+                               #Status_Code="ngModel"
+                               id="Status_Code"
+                               class="form-control"
+                               [(ngModel)]="status.code"
+                               name="Code" />
+                        <validation-messages [formCtrl]="Status_Code"></validation-messages>
+                    </div>
+
+                    <br />
+                    <label class="form-check form-check-custom form-check-solid">
+                        <input id="Status_IsActive"
+                               #Status_IsActive="ngModel"
+                               name="IsActive"
+                               [(ngModel)]="status.isActive"
+                               type="checkbox"
+                               class="form-check-input" />
+                        <span class="form-check-label">
+                            {{ l('IsActive') }}
+                        </span>
+                    </label>
+                    <validation-messages [formCtrl]="Status_IsActive"></validation-messages>
+                </div>
+                <div class="modal-footer">
+                    <button [disabled]="saving" type="button" class="btn btn-default" (click)="close()">
+                        {{ l('Cancel') }}
+                    </button>
+                    <button type="submit"
+                            class="btn btn-primary blue"
+                            [disabled]="!statusForm.form.valid"
+                            [buttonBusy]="saving"
+                            [busyText]="l('SavingWithThreeDot')">
+                        <i class="fa fa-save"></i>
+                        <span>{{ l('Save') }}</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

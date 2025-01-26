@@ -1,0 +1,101 @@
+<div
+    bsModal
+    #createOrEditModal="bs-modal"
+    class="modal fade"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby="createOrEditModal"
+    aria-hidden="true"
+    [config]="{ backdrop: 'static' }"
+>
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form *ngIf="active" #standardMessageForm="ngForm" novalidate (ngSubmit)="save()" autocomplete="off">
+                <div class="modal-header">
+                    <h4 class="modal-title">
+                        <span *ngIf="standardMessage.id">{{ l('EditStandardMessage') }}</span>
+                        <span *ngIf="!standardMessage.id">{{ l('CreateNewStandardMessage') }}</span>
+                    </h4>
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        (click)="close()"
+                        aria-label="Close"
+                        [disabled]="saving"
+                    ></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row my-3">
+                        <div class="col-md-8">
+                            <label class="form-label" for="StandardMessage_Description">{{ l('Description') }}</label>
+                            <input type="text"
+                                   required
+                                   #StandardMessage_Description="ngModel"
+                                   id="StandardMessage_Description"
+                                   class="form-control"
+                                   [(ngModel)]="standardMessage.description"
+                                   name="Description" />
+                            <validation-messages [formCtrl]="StandardMessage_Description"></validation-messages>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="standardMessage_MessageType">{{ l('MessageType') }}</label>
+                            <select-input [(value)]="standardMessage.messageTypeId"
+                                          id="standardMessage_MessageType"
+                                          [serviceName]="'MessageType'"
+                                          [bindValue]="'id'">
+                            </select-input>
+                        </div>
+                    </div>
+
+                    <div class="my-3">
+                        <label class="form-label" for="StandardMessage_Message">{{ l('Message') }}</label>
+                        <textarea type="text"
+                                  pInputTextarea
+                                  required
+                                  rows="8"
+                                  placeholder="Escreva aqui..."
+                                  #StandardMessage_Message="ngModel"
+                                  id="StandardMessage_Message"
+                                  class="form-control"
+                                  [(ngModel)]="standardMessage.message"
+                                  name="Message">
+                        </textarea>
+                        <validation-messages [formCtrl]="StandardMessage_Message"></validation-messages>
+                    </div>
+
+                    <br />
+                    <label class="form-check form-check-custom form-check-solid">
+                        <input
+                            id="StandardMessage_IsActive"
+                            #StandardMessage_IsActive="ngModel"
+                            name="IsActive"
+                            [(ngModel)]="standardMessage.isActive"
+                            type="checkbox"
+                            class="form-check-input"
+                        />
+                        <span class="form-check-label">
+                            {{ l('IsActive') }}
+                        </span>
+                    </label>
+                    <validation-messages [formCtrl]="StandardMessage_IsActive"></validation-messages>
+                </div>
+                <div class="modal-footer">
+                    <button [disabled]="saving" type="button" class="btn btn-default" (click)="close()">
+                        {{ l('Cancel') }}
+                    </button>
+                    <button
+                        type="submit"
+                        class="btn btn-primary blue"
+                        [disabled]="!standardMessageForm.form.valid"
+                        [buttonBusy]="saving"
+                        [busyText]="l('SavingWithThreeDot')"
+                    >
+                        <i class="fa fa-save"></i>
+                        <span>{{ l('Save') }}</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,156 @@
+
+
+<div bsModal #contentModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="contentModal" aria-hidden="true" [config]="{backdrop: 'static'}">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <form #contentModalForm="ngForm" novalidate autocomplete="off">
+                <div class="modal-header">
+                    <h4 class="modal-title">
+                        <span>{{l("Contents")}}</span>
+                    </h4>
+                    <button type="button" class="btn-close" (click)="close()" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex justify-content-end">
+                        <button *ngIf="isGranted('Pages.Administration.Contents.Create')" (click)="createContent()"
+                                class="btn btn-primary blue">
+                            <i class="fa fa-plus"></i> {{l("CreateNewContent")}}
+                        </button>
+                    </div>
+
+                    <form class="form" autocomplete="off">
+                        <div>
+                            <div class="row align-items-center">
+                                <div class="col-xl-12">
+
+
+                                    <div class="my-3">
+                                        <div class="input-group mb-3">
+                                            <input [(ngModel)]="filterText" name="filterText" autoFocus type="text" class="form-control" [placeholder]="l('SearchWithThreeDot')">
+                                            <button class="btn btn-primary" type="submit" (click)="getContents()"><i class="flaticon-search-1"></i></button>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="row align-items-center">
+                        <!--<Primeng-Datatable-Start>-->
+                        <div class="primeng-datatable-container col-12"
+                             [busyIf]="primengTableHelper.isLoading">
+                            <p-table #dataTable
+                                     (onLazyLoad)="getContents($event)"
+                                     [value]="primengTableHelper.records"
+                                     rows="{{primengTableHelper.defaultRecordsCountPerPage}}"
+                                     [paginator]="false"
+                                     [lazy]="true"
+                                     [scrollable]="true"
+                                     ScrollWidth="100%"
+                                     [resizableColumns]="primengTableHelper.resizableColumns">
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th style="width: 130px" [hidden]="!isGrantedAny('Pages.Administration.Contents.Edit', 'Pages.Administration.Contents.Delete')">{{l('Actions')}}</th>
+                                      
+                                        <th style="width: 150px" pSortableColumn="name">
+                                            {{l('Name')}}
+                                            <p-sortIcon field="content.name"></p-sortIcon>
+                                        </th>
+                                        <!--<th style="width: 150px" pSortableColumn="profile">
+                                            {{l('Profile')}}
+                                            <p-sortIcon field="content.profile"></p-sortIcon>
+                                        </th>-->
+                                        <th style="width: 150px" pSortableColumn="endDate">
+                                            {{l('Date')}}
+                                            <p-sortIcon field="content.endDate"></p-sortIcon>
+                                        </th>
+                                        <th style="width: 150px" pSortableColumn="isActive">
+                                            {{l('IsActive')}}
+                                            <p-sortIcon field="content.isActive"></p-sortIcon>
+                                        </th>
+
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-record="$implicit" let-i="rowIndex">
+                                    <tr>
+                                        <td style="width: 130px"
+                                            [hidden]="!isGrantedAny('Pages.Administration.Contents.Edit', 'Pages.Administration.Contents.Delete')">
+                                            <div class="btn-group dropdown" dropdown container="body">
+                                                <button class="dropdown-toggle btn btn-sm btn-primary" dropdownToggle>
+                                                    <i class="fa fa-cog"></i><span class="caret"></span> {{l("Actions")}}
+                                                </button>
+                                                <ul class="dropdown-menu" *dropdownMenu>
+
+                                                    <li>
+                                                        <a href="javascript:;" *ngIf="permission.isGranted('Pages.Administration.Contents.Edit')" class="dropdown-item"
+                                                           (click)="createOrEditContentModal.show(record.id)">{{l('Edit')}}</a>
+                                                    </li>
+                                                    <li>
+                                                        <a class="dropdown-item" href="javascript:;" *ngIf="permission.isGranted('Pages.Administration.Contents.Delete')"
+                                                           (click)="deleteContent(record)">{{l('Delete')}}</a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </td>
+                                      
+                                        <td style="width:150px">
+                                            <span class="p-column-title"> {{l('Name')}}</span>
+                                            {{record.name}}
+                                        </td>
+                                        <!--<td style="width:150px">
+                                            <span class="p-column-title"> {{l('Profile')}}</span>
+                                            <div *ngIf="!record.profile" class="badge badge-light fw-bold ">
+                                                {{l('Both')}}
+                                            </div>
+                                            <div *ngIf="record.profile == 0" class="badge badge-light-primary fw-bold ">
+                                                {{l('Seller')}}
+                                            </div>
+                                            <div *ngIf="record.profile == 1" class="badge badge-light-secondary fw-bold ">
+                                                {{l('Client')}}
+                                            </div>
+                                        </td>-->
+                                        <td style="width:150px">
+                                            <span class="p-column-title"> {{l('Date')}}</span>
+                                            <span *ngIf="record.endDate">
+                                                {{record.endDate |  luxonFormat:'F' }}
+                                            </span>
+                                            <span *ngIf="!record.endDate">-</span>
+                                        </td>
+                                        <td style="width:150px">
+                                            <span class="p-column-title"> {{l('IsActive')}}</span>
+                                            <div *ngIf="record.isActive" class="text-center"><i class="fa fa-check-circle text-success" title="True"></i></div>
+                                            <div *ngIf="!record.isActive" class="text-center"><i class="fa fa-times-circle" title="False"></i></div>
+                                        </td>
+
+                                    </tr>
+
+                                </ng-template>
+                            </p-table>
+                            <div class="primeng-no-data" *ngIf="primengTableHelper.totalRecordsCount == 0">
+                                {{l('NoData')}}
+                            </div>
+                            <div class="primeng-paging-container">
+                                <p-paginator [rows]="primengTableHelper.defaultRecordsCountPerPage"
+                                             #paginator
+                                             (onPageChange)="getContents($event)"
+                                             [totalRecords]="primengTableHelper.totalRecordsCount"
+                                             [rowsPerPageOptions]="primengTableHelper.predefinedRecordsCountPerPage"
+                                             [showCurrentPageReport]="true"
+                                             [currentPageReportTemplate]="'TotalRecordsCount' | localize:primengTableHelper.totalRecordsCount">
+                                </p-paginator>
+                            </div>
+                        </div>
+                        <!--<Primeng-Datatable-End>-->
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" (click)="close()">{{l("Close")}}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+<createOrEditContentModal #createOrEditContentModal (modalSave)="getContents()"></createOrEditContentModal>

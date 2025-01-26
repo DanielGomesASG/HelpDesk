@@ -1,0 +1,109 @@
+<div
+    bsModal
+    #createOrEditModal="bs-modal"
+    class="modal fade"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby="createOrEditModal"
+    aria-hidden="true"
+    [config]="{ backdrop: 'static' }"
+>
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form *ngIf="active" #messageTypeForm="ngForm" novalidate (ngSubmit)="save()" autocomplete="off">
+                <div class="modal-header">
+                    <h4 class="modal-title">
+                        <span *ngIf="messageType.id">{{ l('EditMessageType') }}</span>
+                        <span *ngIf="!messageType.id">{{ l('CreateNewMessageType') }}</span>
+                    </h4>
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        (click)="close()"
+                        aria-label="Close"
+                        [disabled]="saving"
+                    ></button>
+                </div>
+                <div class="modal-body">
+                    <div class="my-3">
+                        <label class="form-label" for="MessageType_Name">{{ l('Name') }}</label>
+                        <input type="text"
+                               #MessageType_Name="ngModel"
+                               id="MessageType_Name"
+                               class="form-control"
+                               [(ngModel)]="messageType.name"
+                               name="Name" />
+                        <validation-messages [formCtrl]="MessageType_Name"></validation-messages>
+                    </div>
+
+                    <div class="my-3">
+                        <label class="form-label" for="MessageType_Description">{{ l('Description') }}</label>
+                        <input type="text"
+                               #MessageType_Description="ngModel"
+                               id="MessageType_Description"
+                               class="form-control"
+                               [(ngModel)]="messageType.description"
+                               name="Description" />
+                        <validation-messages [formCtrl]="MessageType_Description"></validation-messages>
+                    </div>
+
+                    <div class="my-3">
+                        <label class="form-label" for="MessageType_Instructions">{{ l('Instructions') }}</label>
+                        <textarea type="text"
+                                  pInputTextarea
+                                  rows="8"
+                                  placeholder="Forneça uma formulário para facilitar o atendimento"
+                                  #MessageType_Instructions="ngModel"
+                                  id="MessageType_Instructions"
+                                  class="form-control"
+                                  [(ngModel)]="messageType.instructions"
+                                  name="Instructions">
+                        </textarea>
+                        <validation-messages [formCtrl]="MessageType_Instructions"></validation-messages>
+                    </div>
+
+                    <div class="my-3">
+                        <label class="form-label" for="MessageType_Code">{{ l('Code') }}</label>
+                        <input type="text"
+                               #MessageType_Code="ngModel"
+                               id="MessageType_Code"
+                               class="form-control"
+                               [(ngModel)]="messageType.code"
+                               name="Code" />
+                        <validation-messages [formCtrl]="MessageType_Code"></validation-messages>
+                    </div>
+
+                    <br />
+                    <label class="form-check form-check-custom form-check-solid">
+                        <input id="MessageType_IsActive"
+                               #MessageType_IsActive="ngModel"
+                               name="IsActive"
+                               [(ngModel)]="messageType.isActive"
+                               type="checkbox"
+                               class="form-check-input" />
+                        <span class="form-check-label">
+                            {{ l('IsActive') }}
+                        </span>
+                    </label>
+                    <validation-messages [formCtrl]="MessageType_IsActive"></validation-messages>
+                </div>
+                <div class="modal-footer">
+                    <button [disabled]="saving" type="button" class="btn btn-default" (click)="close()">
+                        {{ l('Cancel') }}
+                    </button>
+                    <button
+                        type="submit"
+                        class="btn btn-primary blue"
+                        [disabled]="!messageTypeForm.form.valid"
+                        [buttonBusy]="saving"
+                        [busyText]="l('SavingWithThreeDot')"
+                    >
+                        <i class="fa fa-save"></i>
+                        <span>{{ l('Save') }}</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

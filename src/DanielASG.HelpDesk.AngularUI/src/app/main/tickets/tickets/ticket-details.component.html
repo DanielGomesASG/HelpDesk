@@ -1,0 +1,219 @@
+<div [@routerTransition]>
+    <sub-header [title]="('TicketDetails' | localize)" [breadcrumbs]="breadcrumbs">
+        <div class="col-12 d-flex" role="actions">
+            <div class="input-group-append">
+                <button *ngIf="isGranted('Pages.Ticket.Details.RefreshButton')"
+                        [ngClass]="{
+                            'btn': active, 'mx-1': active,
+                            'btn-primary': !countdownActive,
+                            'btn-success': countdownActive}"
+                        [buttonBusy]="refreshing"
+                        [busyText]="l('RefreshingWithThreeDot')"
+                        (click)="refreshPage()">
+                    <b class="align-middle">({{ countdown }}) </b>  <span class="fs-4 align-middle">{{ l('Refresh') }} </span>
+                    <i class="fas fa-sync-alt p-0 align-middle fs-3 ms-2"></i>
+                </button>
+                <button class="btn btn-danger mx-1" type="button" (click)="stopCountdown()">
+                    <i class="fas fa-stop p-0 fs-3" style="color: white" aria-hidden="true"></i>
+                </button>
+            </div>
+        </div>
+    </sub-header>
+
+    <div [class]="containerClass">
+        <div class="col-12">
+            <div class="d-md-flex justify-content-md-between">
+                <div class="col-12 col-md-8 my-5 mt-md-0">
+                    <div class="card" style="height: 100vh; max-height: 100vh;">
+                        <div #scrollContainer class="card-body overflow-y-scroll">
+                            <div class="row d-flex justify-content-center" *ngFor="let message of messages; let i = index">
+
+                                <div #LeftMessage *ngIf="message.creatorUserId !== currentUserId" class="row d-flex justify-content-start my-3">
+                                    <div class="card col-md-9 bg-light-secondary" style="box-shadow: rgba(0, 0, 0, 0.15) 0px 2px 10px;">
+                                        <div class="card-header d-flex justify-content-between align-items-center mx-0">
+                                            <div *ngIf="message.creatorUserId === ticket.customerUserId">
+                                                <a [href]="customerUser.profilePictureUrl" target="_blank" class="float-left">
+                                                    <img class="img-circle" [src]="customerUser.profilePictureUrl" />
+                                                </a>
+                                                <span class="fw-bolder fs-5">
+                                                    {{ customerUser.name + ' ' + customerUser.surname }} -
+                                                    <span class="fw-medium">{{ l('Customer') }}</span>
+                                                </span>
+                                            </div>
+
+                                            <div *ngIf="message.creatorUserId === ticket.staffUserId">
+                                                <a [href]="staffUser.profilePictureUrl" target="_blank" class="float-left">
+                                                    <img class="img-circle" [src]="staffUser.profilePictureUrl" />
+                                                </a>
+                                                <span class="fw-bolder fs-5">
+                                                    {{ staffUser.name + ' ' + staffUser.surname }} -
+                                                    <span class="fw-medium">{{ l('Staff') }}</span>
+                                                </span>
+                                            </div>
+                                            <span class="fs-5">{{ message.creationTime | luxonFormat: 'dd/LL/yyyy - HH:mm:ss' }}</span>
+                                        </div>
+                                        <div class="card-body">
+                                            <span class="fs-4">{{ message.message }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div #RightMessage *ngIf="message.creatorUserId === currentUserId" class="row d-flex justify-content-end my-3">
+                                    <div class="card col-md-9 bg-light-success" style="box-shadow: rgba(0, 0, 0, 0.15) 0px 2px 10px; ">
+                                        <div class="card-header d-flex justify-content-between align-items-center mx-0">
+                                            <div *ngIf="message.creatorUserId === ticket.customerUserId">
+                                                <a [href]="customerUser.profilePictureUrl" target="_blank" class="float-left">
+                                                    <img class="img-circle" [src]="customerUser.profilePictureUrl" />
+                                                </a>
+                                                <span class="fw-bolder fs-5">
+                                                    {{ customerUser.name + ' ' + customerUser.surname }} -
+                                                    <span class="fw-medium">{{ l('Customer') }}</span>
+                                                </span>
+                                            </div>
+
+                                            <div *ngIf="message.creatorUserId === ticket.staffUserId">
+                                                <a [href]="staffUser.profilePictureUrl" target="_blank" class="float-left">
+                                                    <img class="img-circle" [src]="staffUser.profilePictureUrl" />
+                                                </a>
+                                                <span class="fw-bolder fs-5">
+                                                    {{ staffUser.name + ' ' + staffUser.surname }} -
+                                                    <span class="fw-medium">{{ l('Staff') }}</span>
+                                                </span>
+                                            </div>
+                                            <span class="fs-5">{{ message.creationTime | luxonFormat: 'dd/LL/yyyy - HH:mm' }}</span>
+                                        </div>
+                                        <div class="card-body">
+                                            <span class="fs-4">{{ message.message }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div *ngIf="!isView && (status.code === appStatus.Aberto ||
+                                        status.code === appStatus.AtendenteVinculado)"
+                             class="card-footer d-flex align-items-center">
+                            <div class="col-12 d-flex">
+                                <textarea class="form-control"
+                                          [disabled]="finishing || sending"
+                                          [placeholder]="('TypeAMessage' | localize)"
+                                          rows="1"
+                                          [(ngModel)]="answer"
+                                          (keydown.enter)="send()">
+                            </textarea>
+                                <button (click)="send()"
+                                        class="btn btn-info float-end ms-2 w-25"
+                                        [disabled]="!answer || answer.trim().length === 0"
+                                        [buttonBusy]="sending"
+                                        [busyText]="l('SendingWithThreeDot')">
+                                    <i class="fa fa-paper-plane fs-4"></i>
+                                    <span>{{ l('Send') }}</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div *ngIf="!isView &&
+                            !permission.isGranted('SpecialPermissions.Profiles.Customer') &&
+                            (status.code === appStatus.Aberto ||
+                            status.code === appStatus.AtendenteVinculado)"
+                             class="col-12 mb-3 ms-5 d-flex justify-content-start">
+                            <label class="form-label mt-3 me-3" for="standardMessage">{{ l('StandardMessages') }}:</label>
+                            <select-input [(value)]="standardMessage"
+                                          class="col-md-4"
+                                          id="standardMessage"
+                                          (change)="onChange($event)"
+                                          [customFunction]="'getAllForSelectInput'"
+                                          [customFunctionParam]="messageType.id"
+                                          [serviceName]="'StandardMessage'"
+                                          [bindValue]="'code'">
+                            </select-input>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-4 my-5 mt-md-0" style="height: 100vh; max-height: 100vh; max-width: 100%;">
+                    <div class="ms-md-5" style="height: 31%;">
+                        <div class="card overflow-auto h-100">
+                            <div class="card-header">
+                                <span class="fs-3 fw-bold">{{ l('Customer') }}</span>
+                            </div>
+                            <div class="card-body">
+                                <span class="fs-5"><span class="fw-bold">{{ l('Name') }}:</span> {{ customerUser.name + ' ' + customerUser.surname }}</span>
+                                <br />
+                                <br />
+                                <span class="fs-5"><span class="fw-bold">{{ l('Email') }}:</span> {{ customerUser.emailAddress }}</span>
+                                <br />
+                                <br />
+                                <span class="fs-5"><span class="fw-bold">{{ l('Phone') }}:</span> {{ customerUser.phoneNumber ? customerUser.phoneNumber : '-' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ms-md-5 pt-5" style="height: 69%;">
+                        <div class="card overflow-auto h-100">
+                            <div class="card-header d-flex justify-content-between">
+                                <span class="fs-3 fw-bold">{{ l('Ticket') + ' ' + ticket.id }}</span>
+                                <span class="label label-lg label-inline ms-3"
+                                      [style.color]="status.color"
+                                      [style.background-color]="status.backgroundColor">
+                                    {{status.name}}
+                                </span>
+                            </div>
+                            <div class="card-body">
+                                <span class="fs-5"><span class="fw-bold">{{ l('Subject') }}:</span> {{ ticket.subject }}</span>
+                                <br />
+                                <br />
+                                <span class="fs-5"><span class="fw-bold">{{ l('MessageType') }}:</span> {{ messageType.name }}</span>
+                                <br />
+                                <br />
+                                <span class="fs-5"><span class="fw-bold">{{ l('Staff') }}:</span> {{ staffUser.name + ' ' + staffUser.surname }}</span>
+                                <br />
+                                <br />
+                                <span class="fs-5"><span class="fw-bold">{{ l('Department') }}:</span> {{ department.name }}</span>
+                                <br />
+                                <br />
+                                <span class="fs-5"><span class="fw-bold">{{ l('Priority') }}:</span> {{ ticket.priority ? getPriorityName() : '-' }}</span>
+                                <br />
+                                <br />
+                                <span class="fs-5"><span class="fw-bold">{{ l('CreateDate') }}:</span> {{ ticket.creationTime | luxonFormat: 'dd/LL/yyyy - HH:mm:ss' }}</span>
+                                <br />
+                                <br />
+                                <span class="fs-5"><span class="fw-bold">{{ l('OpenDate') }}:</span> {{ ticket.openDate ? (ticket.openDate | luxonFormat: 'dd/LL/yyyy - HH:mm:ss') : '-' }}</span>
+                                <br />
+                                <br />
+                                <span class="fs-5"><span class="fw-bold">{{ l('FinishDate') }}:</span> {{ ticket.finishDate ? (ticket.finishDate | luxonFormat: 'dd/LL/yyyy - HH:mm:ss') : '-' }}</span>
+                                <br />
+                                <div class="form-group col-12 mt-3">
+                                    <label class="fs-5 fw-bold" for="File">{{ l('File') }}:</label>
+                                    <button class="btn btn-light-primary col-12 mt-1"
+                                            name="File"
+                                            id="File"
+                                            [disabled]="finishing || !ticket.files"
+                                            (click)="downloadFile()">
+                                        {{ filesFileName }}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="col-md-12 d-flex justify-content-end p-2">
+                    <button class="btn btn-secondary"
+                            (click)="back()"
+                            [disabled]="sending">
+                        <i class="fa fa-undo fs-4"></i>
+                        <span>{{ l('Back') }}</span>
+                    </button>
+                    <button *ngIf="!permission.isGranted('SpecialPermissions.Profiles.Customer') && !isView"
+                            (click)="finish()"
+                            class="btn btn-success"
+                            [buttonBusy]="finishing || sending"
+                            [busyText]="l('FinishingTicketWithThreeDots')">
+                        <i class="fa fa-paper-plane fs-4"></i>
+                        <span>{{ l('FinishTicket') }}</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

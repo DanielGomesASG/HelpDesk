@@ -1,0 +1,203 @@
+<div
+    bsModal
+    #createOrEditModal="bs-modal"
+    class="modal fade"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby="createOrEditModal"
+    aria-hidden="true"
+    [config]="{ backdrop: 'static' }"
+>
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form *ngIf="active" #ticketForm="ngForm" novalidate (ngSubmit)="save()" autocomplete="off">
+                <div class="modal-header">
+                    <h4 class="modal-title">
+                        <span *ngIf="ticket.id">{{ l('EditTicket') }}</span>
+                        <span *ngIf="!ticket.id">{{ l('CreateNewTicket') }}</span>
+                    </h4>
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        (click)="close()"
+                        aria-label="Close"
+                        [disabled]="saving"
+                    ></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-6 my-3">
+                            <label class="form-label" for="Ticket_CustomerUser">{{ l('Customer') }}</label>
+                            <select-input [(value)]="ticket.customerUserId"
+                                          id="Ticket_CustomerUser"
+                                          [readonly]="bind || permission.isGranted('SpecialPermissions.Profiles.Customer')"
+                                          [serviceName]="'User'"
+                                          [bindValue]="'id'">
+                            </select-input>
+                        </div>
+                        <div class="col-6 my-3">
+                            <label class="form-label" for="Ticket_StaffUser">{{ l('Staff') }}</label>
+                            <select-input [(value)]="ticket.staffUserId"
+                                          id="Ticket_StaffUser"
+                                          [readonly]="permission.isGranted('SpecialPermissions.Profiles.Customer')"
+                                          [serviceName]="'User'"
+                                          [bindValue]="'id'">
+                            </select-input>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-8 my-3">
+                            <label class="form-label" for="Ticket_Status">{{ l('Status') }}</label>
+                            <select-input [(value)]="ticket.statusId"
+                                          id="Ticket_Status"
+                                          [readonly]="bind || permission.isGranted('SpecialPermissions.Profiles.Customer')"
+                                          [serviceName]="'Status'"
+                                          [bindValue]="'id'">
+                            </select-input>
+                        </div>
+                        <div class="col-4 my-3">
+                            <label class="form-label" for="Ticket_Department">{{ l('Department') }}</label>
+                            <select-input [(value)]="ticket.departmentId"
+                                          id="Ticket_Department"
+                                          [readonly]="bind"
+                                          [serviceName]="'Department'"
+                                          [bindValue]="'id'">
+                            </select-input>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-8 my-3">
+                            <label class="form-label" for="Ticket_MessageType">{{ l('MessageType') }}</label>
+                            <select-input [(value)]="ticket.messageTypeId"
+                                          id="Ticket_MessageType"
+                                          (selectedValueChange)="onChange($event)"
+                                          [readonly]="bind"
+                                          [serviceName]="'MessageType'"
+                                          [bindValue]="'id'">
+                            </select-input>
+                        </div>
+                        <div class="form-group col-4 my-3">
+                            <label class="form-label" for="Priority">{{ l('Priority') }}</label>
+                            <select [disabled]="bind"
+                                    name="Priority"
+                                    id="Priority"
+                                    class="form-select"
+                                    [(ngModel)]="ticket.priority">
+                                <option value="B">Baixa</option>
+                                <option value="N">Normal</option>
+                                <option value="A">Alta</option>
+                                <option value="U">Urgente</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="my-3">
+                            <label class="form-label" for="Ticket_Subject">{{ l('Subject') }}</label>
+                            <input type="text"
+                                   placeholder="Assunto do chamado"
+                                   #Ticket_Subject="ngModel"
+                                   id="Ticket_Subject"
+                                   [readonly]="bind"
+                                   class="form-control"
+                                   [(ngModel)]="ticket.subject"
+                                   name="Subject" />
+                            <validation-messages [formCtrl]="Ticket_Subject"></validation-messages>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="my-3">
+                            <label class="form-label" for="Ticket_Message">{{ l('Message') }}</label>
+                            <textarea type="text"
+                                      pInputTextarea
+                                      required
+                                      rows="8"
+                                      placeholder="Descreva seu chamado"
+                                      #Ticket_Message="ngModel"
+                                      id="Ticket_Message"
+                                      [readonly]="bind"
+                                      class="form-control"
+                                      [(ngModel)]="ticket.message"
+                                      name="Message">
+                            </textarea>
+                            <validation-messages [formCtrl]="Ticket_Message"></validation-messages>
+                        </div>
+
+                        <br />
+                        <label class="form-check form-check-custom form-check-solid ms-3">
+                            <input id="Ticket_Notify"
+                                   [disabled]="bind"
+                                   #Ticket_Notify="ngModel"
+                                   name="Notify"
+                                   [(ngModel)]="ticket.notify"
+                                   type="checkbox"
+                                   class="form-check-input" />
+                            <span class="form-label ms-2 mt-3">
+                                {{ l('NotifyByEmail') }}?
+                            </span>
+                        </label>
+                        <br />
+
+                        <validation-messages [formCtrl]="Ticket_Notify"></validation-messages>
+
+                        <div class="my-3">
+                            <label class="form-label" id="inputGroupFileAddon01">{{ l('Files') }}</label>
+                            <div class="input-group mb-3">
+                                <input type="file"
+                                       class="form-control"
+                                       id="Ticket_Files"
+                                       [disabled]="bind"
+                                       name="Ticket_Files"
+                                       aria-describedby="inputGroupFileAddon01"
+                                       (change)="onSelectFilesFile($event)"
+                                       [accept]="filesFileAcceptedTypes" />
+                            </div>
+
+                            <div *ngIf="filesFileName" style="background-color: #e5e5e5; padding: 5px">
+                                <span class="font-weight-bold">{{ 'CurrentFile' | localize }} :</span>
+                                <div class="alert alert-custom alert-white alert-bold m-1" role="alert">
+                                    <div class="alert-text">
+                                        <a href="{{ getDownloadUrl(ticket.files) }}" target="_blank">{{ filesFileName }}</a>
+                                    </div>
+                                    <div class="alert-close">
+                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                            <span aria-hidden="true" (click)="removeFilesFile()">
+                                                <i class="la la-close fa-1x"></i>
+                                            </span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button [disabled]="saving"
+                            type="button"
+                            class="btn btn-default"
+                            (click)="close()">
+                        {{ l('Cancel') }}
+                    </button>
+                    <button type="submit"
+                            *ngIf="!bind"
+                            class="btn btn-primary"
+                            [disabled]="!ticketForm.form.valid"
+                            [buttonBusy]="saving"
+                            [busyText]="l('SavingWithThreeDot')">
+                        <i class="fa fa-save"></i>
+                        <span>{{ l('Save') }}</span>
+                    </button>
+                    <button *ngIf="bind"
+                            class="btn btn-primary"
+                            [disabled]="!ticket.staffUserId"
+                            [buttonBusy]="saving"
+                            [busyText]="l('SavingWithThreeDot')"
+                            (click)="bindStaff()">
+                        <i class="fa fa-save"></i>
+                        <span>{{ l('BindStaff') }}</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

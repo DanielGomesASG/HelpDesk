@@ -1,0 +1,27 @@
+<div class="form-group">
+    <label *ngIf="name">{{name}}</label>
+    <ng-select #input="ngModel"
+               [items]="list$ | async"
+               [placeholder]="placeholder"
+               [loading]="loading"
+               [typeahead]="input$"
+               [multiple]="multiple"
+               [readonly]="readonly"
+               groupBy="group"
+               [closeOnSelect]="closeOnSelect"
+               (change)="changeValue()"
+               bindLabel="name"
+               [(ngModel)]="selectedValue"
+               [appendTo]="appendTo"
+               [ngClass]="{'is-invalid' : required && submitted && !selectedValue}">
+        <ng-template ng-optgroup-tmp let-item="item">
+            {{item.group || l('UnnamedGroup')}}
+        </ng-template>
+        <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
+            <span [ngOptionHighlight]="search">{{item.name}}</span>
+        </ng-template>
+    </ng-select>
+</div>
+
+
+   

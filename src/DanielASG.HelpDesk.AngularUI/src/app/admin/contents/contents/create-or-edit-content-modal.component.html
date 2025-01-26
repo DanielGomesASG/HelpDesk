@@ -1,0 +1,138 @@
+<div
+    bsModal
+    #createOrEditModal="bs-modal"
+    class="modal fade"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby="createOrEditModal"
+    aria-hidden="true"
+    [config]="{ backdrop: 'static' }"
+>
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form *ngIf="active" #contentForm="ngForm" novalidate (ngSubmit)="save()" autocomplete="off">
+                <div class="modal-header">
+                    <h4 class="modal-title">
+                        <span *ngIf="content.id">{{ l('EditContent') }}</span>
+                        <span *ngIf="!content.id">{{ l('CreateNewContent') }}</span>
+                    </h4>
+
+                    <button type="button"
+                            class="btn-close"
+                            (click)="close()"
+                            aria-label="Close"
+                            [disabled]="saving"></button>
+                </div>
+                <div class="modal-body">
+
+                    <p-tabView styleClass="tabview-custom">
+                        <p-tabPanel>
+                            <ng-template pTemplate="header">
+                                <i class="las la-user-check font-size-h3 font-size-lg-h2 me-3"></i>
+                                <span class="font-weight-bolder font-size-h5 font-size-lg-h2">
+                                    {{l('General')}}
+                                </span>
+                            </ng-template>
+
+                            <div class="row my-3">
+                                <div class="col-md-10">
+                                    <label class="form-label" for="Content_Name">{{l("Name")}}</label>
+                                    <input type="text" #Content_Name="ngModel" id="Content_Name" class="form-control" [(ngModel)]="content.name" name="Name" />
+                                    <validation-messages [formCtrl]="Content_Name"></validation-messages>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label" for="Content_Ordem">{{l("Ordem")}}</label>
+                                    <input type="number" #Content_Ordem="ngModel" id="Content_Ordem" class="form-control" [(ngModel)]="content.ordem" name="Ordem" />
+                                    <validation-messages [formCtrl]="Content_Ordem"></validation-messages>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="Content_ContentHtml">{{l("ContentHtml")}}</label>
+                                <angular-editor [config]="editorConfig"
+                                                [(ngModel)]="html"
+                                                [ngModelOptions]="{standalone: true}">
+                                </angular-editor>
+                            </div>
+
+                            <div class="row my-3">
+                                <div class="col-md-6">
+                                    <label class="form-label" for="Content_StartDate">{{l("StartDate")}}</label>
+                                    <input class="form-control m-input" #Content_StartDate type="datetime" bsDatepicker datePickerLuxonModifier [(date)]="content.startDate" id="Content_StartDate" name="Content_StartDate">
+                                    <validation-messages [formCtrl]="Content_StartDate"></validation-messages>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" for="Content_EndDate">{{l("EndDate")}}</label>
+                                    <input class="form-control m-input" #Content_EndDate type="datetime" bsDatepicker datePickerLuxonModifier [(date)]="content.endDate" id="Content_EndDate" name="Content_EndDate">
+                                    <validation-messages [formCtrl]="Content_EndDate"></validation-messages>
+                                </div>
+                            </div>
+
+                            <br />
+                            <div class="d-flex justify-content-between mb-5">
+                                <label class="form-check form-check-custom form-check-solid">
+                                    <input id="Content_IsActive"
+                                           #Content_IsActive="ngModel"
+                                           name="IsActive"
+                                           [(ngModel)]="content.isActive"
+                                           type="checkbox"
+                                           class="form-check-input" />
+                                    <span class="form-check-label">
+                                        {{l("IsActive")}}
+                                    </span>
+                                </label>
+                                <validation-messages [formCtrl]="Content_IsActive"></validation-messages>
+                            </div>
+                        </p-tabPanel>
+
+                        <p-tabPanel>
+                            <ng-template pTemplate="header">
+                                <i class="las la-lock font-size-h3 font-size-lg-h2 me-3"></i>
+                                <span class="font-weight-bolder font-size-h5 font-size-lg-h2">{{l('Permissions')}}</span>
+                            </ng-template>
+                            <div class="row my-3">
+                                <h4 class="font-weight-light">{{'ViewByPermission' | localize}}</h4>
+                                <div *ngFor="let role of roles" class="col-4">
+                                    <label class="form-check form-check-custom form-check-solid py-1">
+                                        <input id="Content_{{ role.roleName }}"
+                                               type="checkbox"
+                                               name="{{ role.roleName }}"
+                                               [(ngModel)]="role.isAssigned"
+                                               class="form-check-input" />
+                                        <span class="form-check-label">
+                                            {{ role.roleDisplayName }}
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!--<div class="row my-3">
+                                <h4 class="font-weight-light">Exibir por contratantes</h4>
+                                <select-input [(value)]="content.employerIds"
+                                              [serviceName]="'Employer'"
+                                              [multiple]="true"
+                                              [bindValue]="'id'">
+                                </select-input>
+                            </div>-->
+                        </p-tabPanel>
+                    </p-tabView>
+                    
+
+                </div>
+                <div class="modal-footer">
+                    <button [disabled]="saving" type="button" class="btn btn-default" (click)="close()">
+                        {{ l('Cancel') }}
+                    </button>
+                    <button type="submit"
+                            class="btn btn-primary blue"
+                            [disabled]="!contentForm.form.valid"
+                            [buttonBusy]="saving"
+                            [busyText]="l('SavingWithThreeDot')">
+                        <i class="fa fa-save"></i>
+                        <span>{{ l('Save') }}</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
